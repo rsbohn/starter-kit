@@ -5,7 +5,7 @@ var fs = require('fs'),
 
 var config = {
   defaultUserName: 'me',
-  host: 'localhost',
+  host: process.env.PUBLIC_IP || 'localhost',
   storagePort: 8000,
   portalPort: 8001,
   firstAppPort: 8002,
