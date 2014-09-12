@@ -1,0 +1,111 @@
+<!DOCTYPE>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>rs.js starter-kit "caching strategies" example</title>
+  </head>
+  <body>
+    <p id="please-connect">
+      Please connect your remote storage. This app lets you play around with caching strategies (open your browser console).
+      Disconnect to see how each function behaves under each strategy when not connected.
+      <ul>
+      <li>'get' (maxAge: false) always reads from the local store.</li>
+      <li>'fetch' (maxAge: 0) always reads from the remote store.</li>
+      <li>'get or fetch' (maxAge: undefined) reads from the local store if:
+          <ul><li>a recent copy exists locally, or</li>
+          <li>no remote store is connected (anonymous mode), or</li>
+          <li>the app is offline (no connectivity)</li></ul>
+          and from the remote store otherwise. This is currently the default behavior (if you don't specify a maxAge parameter) under all caching strategies.
+      </li>
+      </ul>
+    </p>
+    <div>
+      FLUSH:
+      <input id="text-flush" />
+      <input type="submit" id="button-undefined-flush" value="get or fetch (maxAge: undefined)" />
+      <input type="submit" id="button-false-flush" value="get (maxAge: false)" />
+      <input type="submit" id="button-0-flush" value="fetch (maxAge: 0)" />
+      <div id="current-flush"></div>
+    </div>
+    <div>
+      SEEN (default):
+      <input id="text-seen" />
+      <input type="submit" id="button-undefined-seen" value="get or fetch (maxAge: undefined)" />
+      <input type="submit" id="button-false-seen" value="get (maxAge: false)" />
+      <input type="submit" id="button-0-seen" value="fetch (maxAge: 0)" />
+      <div id="current-seen"></div>
+    </div>
+    <div>
+      ALL:
+      <input id="text-all" />
+      <input type="submit" id="button-undefined-all" value="get or fetch (maxAge: undefined)" />
+      <input type="submit" id="button-false-all" value="get (maxAge: false)" />
+      <input type="submit" id="button-0-all" value="fetch (maxAge: 0)" />
+      <div id="current-all"></div>
+    </div>
+  </body>
+  <script src="remotestorage.js"></script>
+  <script>
+    function $(id) { return document.getElementById(id); }
+
+    function registerKeyHandler(strategy) {
+      $('text-'+strategy).onkeyup = function() {
+        console.log('calling: remoteStorage.scope(\'/notes/\').storeFile(\'text/plain\', \''+strategy+'/note.txt\', \''+$('text-'+strategy).value+'\');');
+        remoteStorage.scope('/notes/').storeFile('text/plain', strategy+'/note.txt', $('text-'+strategy).value);
+      };
+    }
+
+    function registerButtonHandler(strategy, maxAge) {
+      $('button-'+maxAge+'-'+strategy).onclick = function() {
+        remoteStorage.scope('/notes/').getFile(strategy+'/note.txt', maxAge).then(function(obj) {
+          console.log('remoteStorage.scope(\'/notes/\').getFile(\''+strategy+'/note.txt\', false); gave '+JSON.stringify(obj));
+          $('current-'+strategy).innerHTML = JSON.stringify(obj);
+        });
+      };
+    }
+
+    //...
+    RemoteStorage.config.logging = true;
+    RemoteStorage.config.changeEvents = {
+      local: true,
+      window: true,
+      remote: true,
+      conflict: true
+    };
+
+    remoteStorage.access.claim('notes', 'rw');
+    remoteStorage.displayWidget();
+    remoteStorage.on('connected', function() {
+      $('please-connect').style.display = 'none';
+    });
+    RemoteStorage.config.changeEvents = {
+      local: true,
+      window: true,
+      remote: true,
+      conflict: true
+    };
+    remoteStorage.scope('/notes/').cache('flush/', 'FLUSH');
+    remoteStorage.scope('/notes/').cache('seen/', 'SEEN');
+    remoteStorage.scope('/notes/').cache('all/', 'ALL');
+
+    remoteStorage.scope('/notes/').on('change', function (e) {
+      console.log('change event for '+e.path+' from '+e.origin, e);
+    });
+
+    registerKeyHandler('flush');
+    registerKeyHandler('seen');
+    registerKeyHandler('all');
+
+    registerButtonHandler('flush', undefined);
+    registerButtonHandler('seen', undefined);
+    registerButtonHandler('all', undefined);
+
+    registerButtonHandler('flush', false);
+    registerButtonHandler('seen', false);
+    registerButtonHandler('all', false);
+
+    registerButtonHandler('flush', 0);
+    registerButtonHandler('seen', 0);
+    registerButtonHandler('all', 0);
+  </script>
+</html>

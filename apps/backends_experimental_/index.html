@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>rs.js starter-kit "backends" example</title>
+    <style>
+      body { font:15px sans-serif; line-height:1.4em; color:#222 }
+      nav {float:left; margin:3em}
+      nav div { border-style:solid; border-radius:1em; margin: 1em; padding: 1em}
+      nav div table tr td img { width:4em; height:4em; border-radius:1em }
+      article table tr td img { width:3em; height:3em; border-radius:1em }
+      article {float:left; margin-top:4em; padding:1em; border-style:solid; border-radius:1em}
+    </style>
+  </head>
+  <body>
+    <article>
+      <p>This app is included here as example code.
+      Disconnect (click the cube at the top right of the page) to see the GoogleDrive and Dropbox logos
+      in the widget. They will not work from a localhost URL. With the API keys used here,
+      it only works when hosted on
+      <a href="https://export.5apps.com/">https://export.5apps.com</a>. Get your own API keys from
+      <a href="https://www.dropbox.com/developers/apps/">Dropbox</a> and
+      <a href="https://console.developers.google.com/">GoogleDrive</a> to get this working on other URLs.
+      Read the source code to see where it calls the (<a href="https://github.com/remotestorage/remotestorage.js/issues/719">undocumented</a>) function "remoteStorage.setApiKeys" to activate these experimental backends.</p>
+      <ul>
+        <li>(root)<div id="path-"><input type="submit" value=">" onclick="expandOne('');"></div></li>
+    </article>
+  </body>
+  <script src="remotestorage.js"></script>
+  <script>
+    RemoteStorage._log = true;
+    RemoteStorage.prototype.reset = function() { indexedDB.deleteDatabase('remotestorage'); localStorage.clear(); };
+  </script>
+  <script>
+    function d(p) {
+      p.then(function(a) {
+        console.log(a);
+      }, function(a) {
+        console.log(a);
+      });
+    }
+    remoteStorage.stopSync();
+    remoteStorage.enableLog();
+
+
+
+
+
+    /*************************************/
+    /*   ACTIVATE GoogleDrive BACKEND:   */
+    /*************************************/
+
+    remoteStorage.setApiKeys('googledrive', {
+      //see https://console.developers.google.com/project/appunhosted/apiui/credential
+      //and https://code.google.com/apis/console/b/0/?noredirect&pli=1#project:709507725318:overview
+      client_id: '709507725318-3mt4ke1d4tvkc7ktbjvru3csif4nsk67.apps.googleusercontent.com'
+    });
+
+
+
+
+
+    /************************************/
+    /*    ACTIVATE Dropbox BACKEND:     */
+    /************************************/
+
+    remoteStorage.setApiKeys('dropbox', {
+      //see https://www.dropbox.com/developers/apps/info/cybbbiarf4dkrce
+      api_key: 'cybbbiarf4dkrce'
+    });
+
+
+
+
+
+    remoteStorage.displayWidget();
+    remoteStorage.access.claim('*', 'r');
+    function expandOne(path) {
+      remoteStorage.scope('/').getListing(path, 1000000).then(function(listing) {
+        var i, id, str = '<ul>', parentId;
+        parentId = 'path-'+(path.split('-').join('--').split('/').join('-'));
+        for (i in listing) {
+          id = parentId+(i.split('-').join('--').split('/').join('-'));
+          escapedPath = (path+i).split('\'').join('\\\'');
+          if (i.substr(-1) === '/') {
+            str += '<li>'+i+'<div id="'+id+'"><input type="submit" value=">" onclick="expandOne(\''+escapedPath+'\');"></div></li>';
+          } else {
+            str += '<li>'+i+'<div id="path-'+id+'"><input type="submit" value="v" onclick="download(\''+escapedPath+'\');"></div></li>';
+          }
+        }
+        console.log('expandOne', listing, parentId, str+'</ul>');
+        document.getElementById(parentId).innerHTML = str+'</ul>';
+      });
+    }
+    function download(path) {
+      console.log('download', path);
+      remoteStorage.scope('/').getFile(path, 1000000).then(function(obj) {
+        alert(JSON.stringify(obj));
+      });
+    }
+  </script>
+</html>

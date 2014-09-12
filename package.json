@@ -1,0 +1,16 @@
+{
+  "name": "remotestorage-dev-kit",
+  "desc": "Starter kit for remoteStorage app development",
+  "version": "0.2.1",
+  "private": false,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/remotestorage/dev-kit.git"
+  },
+  "homepage": "http://remotestorage.io",
+  "dependencies": {
+    "node-static": "0.7.x",
+    "remotestorage-server": "0.5.9"
+  }
+}

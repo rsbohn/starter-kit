@@ -1,0 +1,41 @@
+<!DOCTYPE>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>rs.js starter-kit "hello world" example</title>
+  </head>
+  <body>
+    <p>
+      Please connect your remote storage.
+    </p>
+    Your name: <input id="text" />
+    <div id="current"></div>
+  </body>
+  <script src="remotestorage.js"></script>
+  <script src="notes.js"></script>
+  <script>
+    RemoteStorage.config.logging = true;
+    RemoteStorage.config.changeEvents = {
+      local: true,
+      window: true,
+      remote: true,
+      conflict: true
+    };
+
+    function $(id) { return document.getElementById(id); }
+
+    function displayNote() {
+      var text = remoteStorage.notes.getNote();
+      $('current').innerHTML = text ? 'Hello '+text : '';    
+    }
+
+    remoteStorage.access.claim('notes', 'rw');
+    remoteStorage.displayWidget();
+    remoteStorage.notes.onChange(displayNote);
+
+    $('text').onkeyup = function() {
+      console.log('calling: remoteStorage.notes.setNote(\''+$('text').value+'\');');
+      remoteStorage.notes.setNote($('text').value);
+    };
+  </script>
+</html>
