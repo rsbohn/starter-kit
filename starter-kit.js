@@ -6,8 +6,8 @@ var fs = require('fs'),
 var config = {
   defaultUserName: 'me',
   host: process.env.PUBLIC_IP || 'localhost',
-  storagePort: 8000,
-  portalPort: 8001,
+  storagePort: process.env.STORAGE_PORT || 8000,
+  portalPort: process.env.PORTAL_PORT || 8001,
   firstAppPort: 8002,
   apps: {}
 };
